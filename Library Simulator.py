@@ -1,8 +1,10 @@
 # Library Management Simulator
+import datetime
 class User :
     def __init__(self,username):
         self.username = username
         self.my_books = []
+
     def borrow(self,name):
         self.my_books.append(name)
 
@@ -24,19 +26,31 @@ class Library :
                           Book("The Art of Invisibility","Kevin Mitnick")]
         self.all_users = []
         self.the_user = ""
+        self.borrow_history = []
+
+    def get_user_data(self):
+        for user in self.all_users :
+            if user.username == self.the_user :
+                return user
+        return None
 
     def borrow_a_book(self):
         if self.the_user :
-            num = self.get_book_number(self.all_books)
-            new_index = num - 1
-            if self.all_books[new_index].is_available :
-                for user in self.all_users :
-                    if user.username == self.the_user :
-                        user.borrow(self.all_books[new_index])
-                        self.all_books[new_index].toggle()
-                        print(f"you successfully borrowed '{self.all_books[new_index].title}' ✅")
+            if len(self.get_user_data().my_books) < 3 :
+                num = self.get_book_number(self.all_books)
+                new_index = num - 1
+                if self.all_books[new_index].is_available :
+                    for user in self.all_users :
+                        if user.username == self.the_user :
+                            user.borrow(self.all_books[new_index])
+                            self.all_books[new_index].toggle()
+                            print(f"you successfully borrowed '{self.all_books[new_index].title}' ✅")
+                            self.borrow_history.append(
+                                f"{self.the_user} borrowed '{self.all_books[new_index].title}' at {datetime.datetime.now().strftime('%H:%M _ %d-%m-%y')}")
+                else :
+                    print("this book is not available right now 📛")
             else :
-                print("this book is not available right now 📛")
+                print("you can't borrow more the three books 📛")
         else :
             print("you need to show your ID first 📛")
 
@@ -121,9 +135,17 @@ class Library :
                     for book in self.all_books :
                         if book.title == deleted.title :
                             book.toggle()
-                    print(f"you successfully put the book back '{deleted.title}'")
+                            self.borrow_history.append(
+                                f"{self.the_user} put back '{book.title}' at {datetime.datetime.now().strftime('%H:%M _ %d-%m-%y')}")
+                    print(f"you successfully put the book back '{deleted.title}'✅")
         else :
             print("you need to show ID first 📛")
+
+    def show_history(self):
+        print("\n-------- history -------")
+        for element in self.borrow_history :
+            print(element)
+        print("------------------------\n")
 
 def main():
     is_running = True
@@ -138,7 +160,8 @@ def main():
         print("4 - show all books in the library ")
         print("5 - borrow a book")
         print("6 - return a book ")
-        print("7 - quit")
+        print("7 - show library history ")
+        print("8 - quit")
         print("---------------------")
         choice = input("enter a number :")
         if choice=="1":
@@ -153,7 +176,9 @@ def main():
             me.borrow_a_book()
         elif choice== "6":
             me.return_book()
-        elif choice == "7" :
+        elif choice == "7":
+            me.show_history()
+        elif choice == "8" :
             print("goodbye , visit us later 👋🏼")
             is_running = False
         else :
