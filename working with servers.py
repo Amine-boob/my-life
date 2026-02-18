@@ -40,3 +40,58 @@ socket.connect((host,port))
 socket.send("hello world".encode("UTF-8"))
 print(socket.recv(1024).decode("UTF-8"))
 
+
+
+
+# sophesticated vrsion :
+
+# server side 
+import socket 
+import threading 
+import concurrent.futures
+
+def handle_client(c):
+    while True :
+        data = c.recv(1024).decode()
+        if data :
+            print(f"the data from the client is : {data}")
+            c.send("you send a message !".encode())
+        else :
+            c.close()
+            break
+
+
+def main():
+    host = "127.0.0.1"
+    port = 9090
+    server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    server.bind((host,port))
+    server.listen(5)
+    while True :
+        communicate ,address = server.accept()
+        for _ in range(5) :
+           threading.Thread(target=handle_client ,args=[communicate]).start()
+
+if __name__ == '__main__':
+    main()
+
+
+
+# client side 
+import socket 
+
+host = "127.0.0.1"
+port = 9090
+name = input("enter your name :")
+gh = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+
+gh.connect((host,port))
+
+while True :
+    message = input("enter the data (q to quit):")
+    if message == "q" :
+        print("goodbye see you later ")
+        break
+    else :
+        gh.send(f"{name} --> {message}".encode("UTF-8"))
+        print(gh.recv(1024).decode("UTF-8"))
