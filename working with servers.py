@@ -1,4 +1,4 @@
-# first version :
+# first version (for lerning):
 
 # server side :
 import socket
@@ -19,15 +19,14 @@ server.listen(5)
 while True :
     # when a client try to connect to that server , the accept method trigger ,
     # and return the addres of that client and a socket that we use use to communicate with that client
-    communication_socket , address = server.accept()
+    communication_socket , address = server.accept() # this function return two things a new socket that used to communicate woth that client 
+                                                     # and it's also return the address of that client that
     print(f"connected to {address}")
     message = communication_socket.recv(1024).decode("UTF-8")
     print(f"the message from the client is :{message}")
     communication_socket.send(f"got your message !".encode("UTF-8"))
     communication_socket.close()
     print("connection with the client terminate !")
-
-
 
 
 # client side :
@@ -43,6 +42,32 @@ socket.send("hello world".encode("UTF-8"))
 print(socket.recv(1024).decode("UTF-8"))
 
 
+
+# UDP server (for lerning)
+import socket 
+
+server = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+server.bind(("127.0.0.1",9999))
+# we are not going to call 'listen' function or 'accept' function 
+# because we are not listening for connection , we are not acception connection 
+# we just listening for messages coming 
+
+# that's why we will use 'recvfrom'
+message ,address = server.recvfrom(1024) #it return also the address
+print(message.decode())
+server.sendto("hello client !".encode(),address) #we need to specify to who we will send message to ...
+
+
+
+# UDP client  
+import socket
+
+client = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+
+
+client.sendto("hello server !!".encode() , ("127.0.0.1",9999))
+# this function below will return two values in a tuple :(message and the address )
+print(client.recvfrom(1024)[0].decode())  # you need to specify only the message !!
 
 
 
@@ -110,7 +135,7 @@ while True :
 
 
 
-# third veersion 
+# third version :
 
 # server side
 import socket 
