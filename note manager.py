@@ -5,7 +5,6 @@
 import hashlib
 import pickle
 import os
-
 class User : 
     def __init__(self,username,password) :
         self.username = username 
@@ -16,7 +15,25 @@ class User :
         if password == self.password :
             return True 
         else :
-            return False  
+            return False 
+    
+    # ---------- Notes Management ----------
+    def add_note(self,note):     
+        self.notes.append(note)
+        print("note successfully added ✅")
+
+    def show_notes(self):
+        if not self.notes :
+            print("you don't have any notes 📛")
+            return
+        print("\n------- your notes -------")
+        for index,value in enumerate(self.notes ,start=1) :
+            print(f"{index} - {value}")
+        print("--------------------------\n")
+    def delete_note(self,index) :
+        get_note_to_delete = self.notes[index-1]
+        self.notes.remove(get_note_to_delete)
+        print("note successfully deleted ✅")
 
 class NoteManager :
     def __init__(self) :
@@ -110,28 +127,6 @@ class NoteManager :
         else :
             print("you are already logged out 📛")
 
-    # ---------- Notes Management ----------
-    def add_note(self,note):     
-        self.get_user_data(self.current_user).notes.append(note)
-        print("note successfully added ✅")
-        self.save_data()
-    def show_notes(self):
-        user_data = self.get_user_data(self.current_user)
-        user_notes = user_data.notes
-        if not user_notes :
-            print("you don't have any notes 📛")
-            return
-        print("\n------- your notes -------")
-        for index,value in enumerate(user_notes ,start=1) :
-            print(f"{index} - {value}")
-        print("--------------------------\n")
-    def delete_note(self,index) :
-        user_data = self.get_user_data(self.current_user)
-        get_note_to_delete = user_data.notes[index-1]
-        user_data.notes.remove(get_note_to_delete)
-        self.save_data()
-        print("note successfully deleted ✅")
-
 
     def hash_password(self,password) :
         return hashlib.sha256(password.encode()).hexdigest()
@@ -175,7 +170,7 @@ def main():
             me.log_out()
         elif choice == "4" :
             if me.current_user :
-                me.show_notes()   
+                user_data.show_notes() 
             else :
                  print("you need to log in first 📛")
         elif choice == "5" :
@@ -185,7 +180,8 @@ def main():
                     if note == "":
                         print("enter something 📛")
                     else :
-                        me.add_note(note)
+                        user_data.add_note(note)
+                        me.save_data()
                         break
             else :
                 print("you need to log in first 📛")
@@ -197,7 +193,8 @@ def main():
                         if number.isdigit():
                             number = int(number)
                             if 1 <= number <= len(user_data.notes) :
-                                me.delete_note(number)
+                                user_data.delete_note(number)
+                                me.save_data()
                                 break
                             else :
                                 print("your number out of the range 📛")
@@ -214,3 +211,4 @@ def main():
     
 if __name__ == '__main__':
     main()
+
