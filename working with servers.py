@@ -1,3 +1,5 @@
+# first version :
+
 # server side :
 import socket
 
@@ -43,7 +45,12 @@ print(socket.recv(1024).decode("UTF-8"))
 
 
 
-# sophesticated vrsion :
+
+
+
+
+
+# second vrsion :
 
 # server side 
 import socket 
@@ -95,3 +102,101 @@ while True :
     else :
         gh.send(f"{name} --> {message}".encode("UTF-8"))
         print(gh.recv(1024).decode("UTF-8"))
+
+
+
+
+
+
+
+
+# third version :
+
+# server side
+import socket 
+import threading 
+
+clients = []
+usernames = []
+
+def broadcast(messaage):
+    for client in clients :
+        client.send(messaage)
+
+def handle_client(client):
+    while True:
+        # try to receive the message from the client if it succeed -->broadcast it to all clients
+        try :
+            message = client.recv(1024).decode()
+            broadcast(message)
+        except :
+            # if the connection is over we need to remove that client from the list of clients 
+            # close the connection to that client 
+            index = clients.index(client)
+            clients.remove(client)
+            client.close()
+            name = usernames[index]
+            usernames.remove(name)
+            broadcast(f"{name} : just left the server !".encode())
+            break 
+
+def main():
+    host = "127.0.0.1"
+    port = 9090
+
+    server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    server.bind((host,port))
+    server.listen(5)
+    
+    while True :
+        communicate, address = server.accept()
+        print(f"connection with {address}")
+        communicate.send("USERNAME".encode())
+        username= communicate.recv(1024).decode()
+        usernames.append(username)
+        clients.append(communicate)
+
+        print(f"the username is :{username}")
+        broadcast(f"\n{username} : is in the server now !!".encode())
+        communicate.send("\nconnected to the server !".encode())
+        threading.Thread(target=handle_client,args=[communicate]).start()
+
+
+if __name__=='__main__' :
+    main()
+
+
+
+# client side 
+import socket 
+import threading 
+host = "127.0.0.1"
+port = 9090
+
+sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+sock.connect((host,port))
+name = input("enter your name :")
+
+
+def receive():
+    while True :
+        try :
+            message = sock.recv(1024).decode()
+            if message == "USERNAME":
+                sock.send(name.encode())
+            else :
+                print(message)
+        except :
+            print("an error happen !")
+            sock.close()
+            break 
+
+def write():
+    while True :
+        message = f"{name}: {input("")}"
+        sock.send(message.encode())
+
+
+threading.Thread(target=receive).start()
+threading.Thread(target=write).start()
+
