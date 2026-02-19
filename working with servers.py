@@ -110,7 +110,7 @@ while True :
 
 
 
-# third version :
+# third veersion 
 
 # server side
 import socket 
@@ -118,85 +118,89 @@ import threading
 
 clients = []
 usernames = []
-
-def broadcast(messaage):
+def broadcast(message):
     for client in clients :
-        client.send(messaage)
+        client.send(message)
 
 def handle_client(client):
-    while True:
+    while True :
         # try to receive the message from the client if it succeed -->broadcast it to all clients
         try :
-            message = client.recv(1024).decode()
+            message = client.recv(1024)
             broadcast(message)
         except :
-            # if the connection is over we need to remove that client from the list of clients 
+             # if the connection is over we need to remove that client from the list of clients 
             # close the connection to that client 
             index = clients.index(client)
+            name = usernames[index] 
             clients.remove(client)
-            client.close()
-            name = usernames[index]
             usernames.remove(name)
-            broadcast(f"{name} : just left the server !".encode())
-            break 
+            left_message = f"{name} has left the server !"
+            broadcast(left_message.encode())
+            print(left_message)
+            
+            client.close()
+            break
 
 def main():
-    host = "127.0.0.1"
-    port = 9090
-
+    host = "192.168.1.153"
+    port = 55558
     server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     server.bind((host,port))
     server.listen(5)
-    
     while True :
-        communicate, address = server.accept()
-        print(f"connection with {address}")
-        communicate.send("USERNAME".encode())
-        username= communicate.recv(1024).decode()
+        client,address = server.accept()
+        print(f"connect to :{address}")
+        client.send("USER".encode())
+        username = client.recv(1024).decode()
         usernames.append(username)
-        clients.append(communicate)
+        clients.append(client)
+        
+        message = f"{username} :connected to the server "
+        print(f"{username} :connected the server")
+        broadcast(message.encode())
 
-        print(f"the username is :{username}")
-        broadcast(f"\n{username} : is in the server now !!".encode())
-        communicate.send("\nconnected to the server !".encode())
-        threading.Thread(target=handle_client,args=[communicate]).start()
+        threading.Thread(target=handle_client,args=[client]).start()
 
 
-if __name__=='__main__' :
+
+if __name__ == '__main__':
     main()
 
 
 
+
+
 # client side 
-import socket 
+import socket
 import threading 
-host = "127.0.0.1"
-port = 9090
 
-sock = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-sock.connect((host,port))
+host = "192.168.1.153"
+port = 55558
+
+client = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+client.connect((host,port))
 name = input("enter your name :")
-
 
 def receive():
     while True :
+        
         try :
-            message = sock.recv(1024).decode()
-            if message == "USERNAME":
-                sock.send(name.encode())
+            message = client.recv(1024).decode()
+            if message == "USER":
+                client.send(name.encode())
             else :
                 print(message)
         except :
-            print("an error happen !")
-            sock.close()
-            break 
+            print("an issue has accurred !")
+            client.close()
+            break
 
 def write():
     while True :
-        message = f"{name}: {input("")}"
-        sock.send(message.encode())
+        client.send(f"{name} :{input("")}".encode())
+
 
 
 threading.Thread(target=receive).start()
 threading.Thread(target=write).start()
-
